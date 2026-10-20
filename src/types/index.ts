@@ -4,7 +4,7 @@ export type ProductCategory =
   | 'Rugs & Runners'
   | 'Bedsheets & Bedding';
 
-export type CurrencyCode = 'INR' | 'USD' | 'EUR' | 'GBP' | 'AED';
+export type CurrencyCode = 'INR' | 'USD' | 'EUR' | 'GBP' | 'AED' | 'CAD' | 'AUD';
 
 export interface CurrencyConfig {
   code: CurrencyCode;
@@ -13,22 +13,43 @@ export interface CurrencyConfig {
   name: string;
 }
 
+export interface CountryConfig {
+  code: string;
+  name: string;
+  flag: string;
+  defaultCurrency: CurrencyCode;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  fullName?: string;
+  createdAt?: string;
+}
+
+export interface CookiePreferences {
+  accepted: boolean;
+  essential: boolean;
+  analytics: boolean;
+  marketing: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
   tagline: string;
   category: ProductCategory;
-  priceUSD: number; // base price in USD
+  priceUSD: number;
   compareAtPriceUSD?: number;
   rating: number;
   reviewCount: number;
   images: string[];
   materials: string[];
   dimensions: {
-    width: number; // cm
+    width: number;
     height: number;
     depth?: number;
-    weight: number; // kg
+    weight: number;
   };
   colors: { name: string; hex: string }[];
   inStock: boolean;
@@ -42,8 +63,8 @@ export interface Product {
 export interface LookbookPin {
   id: string;
   productId: string;
-  x: number; // percentage 0 - 100
-  y: number; // percentage 0 - 100
+  x: number;
+  y: number;
   label: string;
 }
 

@@ -1,14 +1,17 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { Product, LookbookScene, LookbookPin, CartItem, Order, AdminAnalytics, CurrencyCode, CurrencyConfig } from '@/types';
-import { INITIAL_PRODUCTS, INITIAL_LOOKBOOK_SCENES, INITIAL_ORDERS, INITIAL_ANALYTICS, SUPPORTED_CURRENCIES } from '@/data/mockData';
+import { Product, LookbookScene, LookbookPin, CartItem, Order, AdminAnalytics, CurrencyCode, CurrencyConfig, CountryConfig, AuthUser, CookiePreferences } from '@/types';
+import { INITIAL_PRODUCTS, INITIAL_LOOKBOOK_SCENES, INITIAL_ORDERS, INITIAL_ANALYTICS, SUPPORTED_CURRENCIES, SUPPORTED_COUNTRIES } from '@/data/mockData';
+import { supabase } from '@/lib/supabase';
 
 interface Toast {
   id: string;
   message: string;
   type?: 'success' | 'info' | 'warning';
 }
+
+export type LegalModalType = 'privacy' | 'terms' | 'shipping' | 'returns' | 'cookies' | null;
 
 interface StoreContextType {
   products: Product[];
@@ -23,13 +26,38 @@ interface StoreContextType {
   toasts: Toast[];
   showToast: (message: string, type?: 'success' | 'info' | 'warning') => void;
   
-  // Multi-Currency Engine
+  // Country & Multi-Currency Engine
+  country: string;
+  setCountry: (code: string) => void;
+  supportedCountries: CountryConfig[];
+  currentCountryConfig: CountryConfig;
+  isCountryModalOpen: boolean;
+  setIsCountryModalOpen: (open: boolean) => void;
+
   currency: CurrencyCode;
   setCurrency: (code: CurrencyCode) => void;
   supportedCurrencies: CurrencyConfig[];
   currentCurrencyConfig: CurrencyConfig;
   formatPrice: (amountUSD: number) => string;
   convertPrice: (amountUSD: number) => number;
+
+  // Supabase Authentication
+  user: AuthUser | null;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ success: boolean; error?: string }>;
+  signOut: () => Promise<void>;
+
+  // Cookie & Compliance
+  cookieConsent: CookiePreferences | null;
+  setCookieConsent: (prefs: CookiePreferences) => void;
+  isCookieBannerOpen: boolean;
+  setIsCookieBannerOpen: (open: boolean) => void;
+
+  // Legal Modals
+  activeLegalModal: LegalModalType;
+  setActiveLegalModal: (modal: LegalModalType) => void;
 
   // Razorpay
   razorpayButtonId: string;
@@ -70,13 +98,31 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   
-  // Default currency: INR (₹) as requested for Razorpay store, with instant switcher
+  // Country & Currency Engine
+  const [country, setCountryState] = useState<string>('IN');
+  const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
   const [currency, setCurrencyState] = useState<CurrencyCode>('INR');
   const razorpayButtonId = 'pl_TgPcN7ialmNe50';
 
-  // Hydrate from localStorage on client mount
+  // Supabase Auth State
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Cookie & Compliance State
+  const [cookieConsent, setCookieConsentState] = useState<CookiePreferences | null>(null);
+  const [isCookieBannerOpen, setIsCookieBannerOpen] = useState(false);
+
+  // Legal Modals State
+  const [activeLegalModal, setActiveLegalModal] = useState<LegalModalType>(null);
+
+  // Hydrate from localStorage and initialize Supabase Auth on client mount
   useEffect(() => {
     try {
+      const storedCountry = localStorage.getItem('tasmoda_country');
+      if (storedCountry && SUPPORTED_COUNTRIES.some((c) => c.code === storedCountry)) {
+        setCountryState(storedCountry);
+      }
+
       const storedCurrency = localStorage.getItem('tasmoda_currency') as CurrencyCode;
       if (storedCurrency && SUPPORTED_CURRENCIES.some((c) => c.code === storedCurrency)) {
         setCurrencyState(storedCurrency);
@@ -93,8 +139,82 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       const storedCart = localStorage.getItem('tasmoda_cart_v2');
       if (storedCart) setCart(JSON.parse(storedCart));
+
+      const storedConsent = localStorage.getItem('tasmoda_cookie_consent');
+      if (storedConsent) {
+        setCookieConsentState(JSON.parse(storedConsent));
+      } else {
+        setIsCookieBannerOpen(true);
+      }
+
+      const storedUser = localStorage.getItem('tasmoda_auth_user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     } catch {}
+
+    // Initialize Supabase Auth Session
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (session?.user && !error) {
+          const authUser: AuthUser = {
+            id: session.user.id,
+            email: session.user.email || '',
+            fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+            createdAt: session.user.created_at,
+          };
+          setUser(authUser);
+          try {
+            localStorage.setItem('tasmoda_auth_user', JSON.stringify(authUser));
+          } catch {}
+        }
+      } catch (err) {
+        console.warn('Supabase session initialization note:', err);
+      }
+    };
+    checkSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const authUser: AuthUser = {
+          id: session.user.id,
+          email: session.user.email || '',
+          fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+          createdAt: session.user.created_at,
+        };
+        setUser(authUser);
+        try {
+          localStorage.setItem('tasmoda_auth_user', JSON.stringify(authUser));
+        } catch {}
+      } else {
+        setUser(null);
+        try {
+          localStorage.removeItem('tasmoda_auth_user');
+        } catch {}
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
+
+  const setCountry = (code: string) => {
+    setCountryState(code);
+    try {
+      localStorage.setItem('tasmoda_country', code);
+    } catch {}
+    const countryConfig = SUPPORTED_COUNTRIES.find((c) => c.code === code);
+    if (countryConfig) {
+      setCurrency(countryConfig.defaultCurrency);
+      showToast(`Country set to ${countryConfig.name} (${countryConfig.flag})`);
+    }
+  };
+
+  const currentCountryConfig = useMemo(() => {
+    return SUPPORTED_COUNTRIES.find((c) => c.code === country) || SUPPORTED_COUNTRIES[0];
+  }, [country]);
 
   const setCurrency = (code: CurrencyCode) => {
     setCurrencyState(code);
@@ -108,6 +228,82 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const currentCurrencyConfig = useMemo(() => {
     return SUPPORTED_CURRENCIES.find((c) => c.code === currency) || SUPPORTED_CURRENCIES[0];
   }, [currency]);
+
+  const setCookieConsent = (prefs: CookiePreferences) => {
+    setCookieConsentState(prefs);
+    setIsCookieBannerOpen(false);
+    try {
+      localStorage.setItem('tasmoda_cookie_consent', JSON.stringify(prefs));
+    } catch {}
+    showToast('Cookie preferences updated & saved.');
+  };
+
+  // Supabase Auth Methods
+  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        // Provide clear feedback or graceful fallback if email confirmation is required or rate-limited
+        return { success: false, error: error.message };
+      }
+      if (data.user) {
+        const authUser: AuthUser = {
+          id: data.user.id,
+          email: data.user.email || email,
+          fullName: data.user.user_metadata?.full_name || email.split('@')[0],
+          createdAt: data.user.created_at,
+        };
+        setUser(authUser);
+        showToast(`Welcome back, ${authUser.fullName || 'Connoisseur'}!`);
+        setIsAuthModalOpen(false);
+        return { success: true };
+      }
+      return { success: false, error: 'Sign in failed' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Authentication network issue' };
+    }
+  };
+
+  const signUp = async (email: string, password: string, fullName: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+        },
+      });
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      if (data.user) {
+        const authUser: AuthUser = {
+          id: data.user.id,
+          email: data.user.email || email,
+          fullName: fullName || email.split('@')[0],
+          createdAt: data.user.created_at,
+        };
+        setUser(authUser);
+        showToast(`Account created for ${authUser.fullName}! Welcome to Tasmoda.`);
+        setIsAuthModalOpen(false);
+        return { success: true };
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Registration issue' };
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch {}
+    setUser(null);
+    try {
+      localStorage.removeItem('tasmoda_auth_user');
+    } catch {}
+    showToast('Signed out of your Tasmoda account.', 'info');
+  };
 
   const convertPrice = (amountUSD: number): number => {
     return Math.round(amountUSD * currentCurrencyConfig.rateFromUSD);
@@ -319,12 +515,30 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setQuickViewProduct,
         toasts,
         showToast,
+        country,
+        setCountry,
+        supportedCountries: SUPPORTED_COUNTRIES,
+        currentCountryConfig,
+        isCountryModalOpen,
+        setIsCountryModalOpen,
         currency,
         setCurrency,
         supportedCurrencies: SUPPORTED_CURRENCIES,
         currentCurrencyConfig,
         formatPrice,
         convertPrice,
+        user,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        signIn,
+        signUp,
+        signOut,
+        cookieConsent,
+        setCookieConsent,
+        isCookieBannerOpen,
+        setIsCookieBannerOpen,
+        activeLegalModal,
+        setActiveLegalModal,
         razorpayButtonId,
         addToCart,
         removeFromCart,

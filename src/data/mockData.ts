@@ -1,4 +1,14 @@
-import { Product, LookbookScene, Order, AdminAnalytics, CurrencyConfig } from '@/types';
+import { Product, LookbookScene, Order, AdminAnalytics, CurrencyConfig, CountryConfig } from '@/types';
+
+export const SUPPORTED_COUNTRIES: CountryConfig[] = [
+  { code: 'IN', name: 'India', flag: '🇮🇳', defaultCurrency: 'INR' },
+  { code: 'US', name: 'United States', flag: '🇺🇸', defaultCurrency: 'USD' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', defaultCurrency: 'GBP' },
+  { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', defaultCurrency: 'AED' },
+  { code: 'EU', name: 'European Union (Germany/France/Italy)', flag: '🇪🇺', defaultCurrency: 'EUR' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', defaultCurrency: 'CAD' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', defaultCurrency: 'AUD' },
+];
 
 export const SUPPORTED_CURRENCIES: CurrencyConfig[] = [
   { code: 'INR', symbol: '₹', rateFromUSD: 86.5, name: 'Indian Rupee (INR)' },
@@ -6,6 +16,8 @@ export const SUPPORTED_CURRENCIES: CurrencyConfig[] = [
   { code: 'EUR', symbol: '€', rateFromUSD: 0.92, name: 'Euro (EUR)' },
   { code: 'GBP', symbol: '£', rateFromUSD: 0.79, name: 'British Pound (GBP)' },
   { code: 'AED', symbol: 'AED ', rateFromUSD: 3.67, name: 'UAE Dirham (AED)' },
+  { code: 'CAD', symbol: 'CA$', rateFromUSD: 1.38, name: 'Canadian Dollar (CAD)' },
+  { code: 'AUD', symbol: 'AU$', rateFromUSD: 1.52, name: 'Australian Dollar (AUD)' },
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
