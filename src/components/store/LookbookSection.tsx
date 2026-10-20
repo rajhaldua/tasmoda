@@ -102,10 +102,10 @@ export function LookbookSection() {
                   <Plus className={`w-4 h-4 transition-transform duration-200 ${isSelected ? 'rotate-45' : ''}`} />
                 </button>
 
-                {/* Hotspot Product Card Popover */}
+                {/* Hotspot Product Card Popover (Desktop / Tablet) */}
                 {isSelected && product && (
                   <div
-                    className="absolute z-30 bottom-12 left-1/2 -translate-x-1/2 w-64 sm:w-72 p-3 sm:p-4 rounded-2xl glass-dark text-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-white/20"
+                    className="hidden sm:block absolute z-30 bottom-12 left-1/2 -translate-x-1/2 w-72 p-4 rounded-2xl glass-dark text-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-white/20"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -158,6 +158,68 @@ export function LookbookSection() {
               </div>
             );
           })}
+
+          {/* Mobile Docked Pin Card (docked at bottom of lookbook on mobile, no clipping) */}
+          {activePin && (() => {
+            const product = getProductForPin(activePin.productId);
+            if (!product) return null;
+            return (
+              <div
+                className="sm:hidden absolute inset-x-3 bottom-3 z-30 p-3.5 rounded-2xl glass-dark text-white shadow-2xl animate-in slide-in-from-bottom-2 duration-200 border border-white/20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                  <span className="text-[10px] uppercase tracking-widest text-[#D7C7B2]">
+                    Selected Pin: {activePin.label}
+                  </span>
+                  <button
+                    onClick={() => setActivePin(null)}
+                    className="p-1 rounded-full text-stone-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex gap-3 items-center">
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-14 h-14 rounded-xl object-cover bg-stone-800 shrink-0 border border-white/10"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase tracking-wider text-[#D7C7B2] block">
+                      {product.category}
+                    </span>
+                    <h4 className="font-serif text-sm font-normal truncate mt-0.5">{product.name}</h4>
+                    <p className="text-sm font-semibold text-white">{formatPrice(product.priceUSD)}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      addToCart(product);
+                      setActivePin(null);
+                    }}
+                    className="flex-1 py-2 px-3 rounded-full bg-[#9E7D56] hover:bg-[#876742] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Add to Bag</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setQuickViewProduct(product);
+                      setActivePin(null);
+                    }}
+                    className="p-2 rounded-full bg-white/15 text-white"
+                    title="Quick Details"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Bottom Helper Bar */}

@@ -23,15 +23,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Tasmoda — Sculptural Luxury Home Decor & Objects',
+  title: 'Tasmoda — Luxury Curtains, Hand-Knotted Rugs & Normandy Bedding',
   description:
-    'Curated architectural home decor, sculptural ceramics, Italian travertine furniture, and minimalist artisanal accents.',
+    'Artisanal Belgian linen curtains, tactile bouclé pillow covers, Moroccan Berber rugs, and stone-washed French linen bedsheets. Express delivery with Razorpay.',
   keywords: [
-    'luxury home decor',
-    'travertine coffee table',
-    'sculptural lighting',
-    'minimalist interior design',
-    'artisanal furniture',
+    'luxury linen curtains',
+    'blackout drapes',
+    'bouclé cushion covers',
+    'berber rugs',
+    'french bedsheets',
+    'home decor',
     'Tasmoda',
   ],
 };

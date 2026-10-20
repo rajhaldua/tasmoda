@@ -9,6 +9,10 @@ import { BrandEthos } from '@/components/store/BrandEthos';
 import { Footer } from '@/components/store/Footer';
 import { ProductDetailModal } from '@/components/store/ProductDetailModal';
 import { CartDrawer } from '@/components/store/CartDrawer';
+import { AuthModal } from '@/components/store/AuthModal';
+import { CountryCurrencyModal } from '@/components/store/CountryCurrencyModal';
+import { CookieBanner } from '@/components/store/CookieBanner';
+import { LegalModals } from '@/components/store/LegalModals';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 
 export default function StorefrontPage() {
@@ -23,7 +27,7 @@ export default function StorefrontPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
+    <div className="min-h-screen flex flex-col bg-[#FDFBF7] overflow-x-hidden selection:bg-[#9E7D56] selection:text-white">
       {/* Toast Feedback */}
       <ToastContainer />
 
@@ -64,6 +68,18 @@ export default function StorefrontPage() {
 
       {/* Dynamic Slide-Over Bag */}
       <CartDrawer />
+
+      {/* Supabase Authentication Modal */}
+      <AuthModal />
+
+      {/* Country & Currency Selector Modal */}
+      <CountryCurrencyModal />
+
+      {/* GDPR & ePrivacy Cookie Declaration Banner */}
+      <CookieBanner />
+
+      {/* Comprehensive Legal Disclosures Modal */}
+      <LegalModals />
     </div>
   );
 }

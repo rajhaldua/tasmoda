@@ -92,13 +92,13 @@ export function CartDrawer() {
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-xs">
       <div className="absolute inset-0" onClick={() => setIsCartOpen(false)} />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-[#FDFBF7] shadow-2xl flex flex-col justify-between border-l border-[#ECE5DA]">
           
           {/* Top Header */}
-          <div className="p-6 border-b border-[#ECE5DA] flex items-center justify-between">
+          <div className="p-4 sm:p-6 border-b border-[#ECE5DA] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-serif text-xl tracking-tight font-normal text-[#1C1917]">Your Textile Bag</span>
+              <span className="font-serif text-lg sm:text-xl tracking-tight font-normal text-[#1C1917]">Your Textile Bag</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#F6F2EB] font-semibold text-[#8C827A]">
                 {cart.length} {cart.length === 1 ? 'item' : 'items'}
               </span>

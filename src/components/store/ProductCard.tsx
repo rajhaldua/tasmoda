@@ -45,11 +45,11 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* Floating Quick Action Overlay */}
-        <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+        {/* Floating Quick Action Overlay (Always visible on mobile touch, hover on desktop) */}
+        <div className="absolute inset-x-2.5 sm:inset-x-3 bottom-2.5 sm:bottom-3 flex items-center gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
           <button
             onClick={() => addToCart(product, 1, selectedColor?.name)}
-            className="flex-1 py-2.5 px-3 rounded-xl bg-[#1C1917] hover:bg-[#322E2B] text-white text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-lg"
+            className="flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl bg-[#1C1917]/90 hover:bg-[#1C1917] backdrop-blur-xs text-white text-[11px] sm:text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-1 sm:gap-1.5 transition-colors shadow-lg min-h-[38px]"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             <span>Add to Bag</span>
@@ -57,10 +57,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
           <button
             onClick={() => setQuickViewProduct(product)}
-            className="p-2.5 rounded-xl bg-white/90 hover:bg-white text-[#1C1917] transition-colors shadow-lg"
+            className="p-2 sm:p-2.5 rounded-xl bg-white/90 hover:bg-white text-[#1C1917] transition-colors shadow-lg min-w-[38px] min-h-[38px] flex items-center justify-center"
             title="Quick view specifications"
+            aria-label="Quick view specifications"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>

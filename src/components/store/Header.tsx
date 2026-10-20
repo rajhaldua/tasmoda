@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/context/StoreContext';
-import { CurrencyCode } from '@/types';
-import { ShoppingBag, Search, Menu, X, ArrowRight, LayoutDashboard, Globe, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Search, Menu, X, ArrowRight, Globe, ChevronDown, User, CheckCircle2 } from 'lucide-react';
 
 interface HeaderProps {
   onSelectCategory?: (category: string) => void;
@@ -13,10 +12,19 @@ interface HeaderProps {
 }
 
 export function Header({ onSelectCategory, selectedCategory, onSearchChange }: HeaderProps) {
-  const { cartCount, setIsCartOpen, currency, setCurrency, supportedCurrencies } = useStore();
+  const {
+    cartCount,
+    setIsCartOpen,
+    currency,
+    currentCurrencyConfig,
+    currentCountryConfig,
+    setIsCountryModalOpen,
+    user,
+    setIsAuthModalOpen,
+  } = useStore();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
 
   const navLinks = [
@@ -34,34 +42,32 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
     setIsMobileMenuOpen(false);
   };
 
-  const currentCurrency = supportedCurrencies.find((c) => c.code === currency) || supportedCurrencies[0];
-
   return (
     <header className="sticky top-0 z-40 w-full transition-all duration-300">
       {/* Top Announcement Bar */}
-      <div className="bg-[#1C1917] text-[#FAF8F5] text-xs py-2 px-4 text-center tracking-wider font-light flex items-center justify-center gap-2">
-        <span>Complimentary delivery on handcrafted luxury curtains, rugs, & bedding</span>
-        <span className="hidden sm:inline opacity-40">•</span>
-        <span className="hidden sm:inline opacity-80">Razorpay Express Checkout Enabled</span>
+      <div className="bg-[#1C1917] text-[#FAF8F5] text-[11px] sm:text-xs py-2 px-3 sm:px-4 text-center tracking-wider font-light flex items-center justify-center gap-1.5 sm:gap-2">
+        <span className="truncate">Complimentary delivery on handcrafted luxury curtains, rugs, &amp; bedding</span>
+        <span className="hidden md:inline opacity-40">•</span>
+        <span className="hidden md:inline opacity-80">Razorpay Express Checkout Active</span>
       </div>
 
       {/* Main Glass Navigation Bar */}
-      <div className="bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#ECE5DA]/80 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      <div className="bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#ECE5DA]/80 transition-all">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Mobile menu button */}
+          {/* Mobile menu trigger */}
           <div className="flex items-center lg:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 -ml-2 text-[#1C1917] hover:text-[#9E7D56] transition-colors"
-              aria-label="Toggle menu"
+              className="p-2 -ml-1 text-[#1C1917] hover:text-[#9E7D56] transition-colors rounded-xl focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Toggle navigation menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
 
           {/* Desktop Left Nav Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs uppercase tracking-widest font-medium text-[#57534E]">
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs uppercase tracking-widest font-medium text-[#57534E]">
             {navLinks.map((link) => (
               <button
                 key={link.name}
@@ -85,79 +91,70 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
 
           {/* Center Brand Identity */}
           <div className="text-center flex-1 lg:flex-initial">
-            <Link href="/" className="inline-block group">
-              <span className="font-serif text-2xl sm:text-3xl tracking-[0.22em] font-normal text-[#1C1917] transition-colors group-hover:text-[#9E7D56]">
+            <Link href="/" className="inline-block group py-1">
+              <span className="font-serif text-xl sm:text-2xl lg:text-3xl tracking-[0.18em] sm:tracking-[0.22em] font-normal text-[#1C1917] transition-colors group-hover:text-[#9E7D56]">
                 TASMODA
               </span>
-              <span className="block text-[8px] uppercase tracking-[0.32em] text-[#8C827A] -mt-1 font-sans">
+              <span className="block text-[7px] sm:text-[8px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-[#8C827A] -mt-0.5 sm:-mt-1 font-sans">
                 Curtains • Rugs • Bedding
               </span>
             </Link>
           </div>
 
-          {/* Right Action Icons & Currency Switcher */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Action Icons: Country/Currency, Search, Auth, Cart */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             
-            {/* Currency Selector Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-[#F6F2EB] hover:bg-[#EDE5D8] text-[#1C1917] border border-[#E0D7C9] transition-all"
-                title="Select Currency"
-              >
-                <Globe className="w-3.5 h-3.5 text-[#9E7D56]" />
-                <span>{currentCurrency.symbol} {currentCurrency.code}</span>
-                <ChevronDown className="w-3 h-3 text-[#8C827A]" />
-              </button>
+            {/* Country & Currency Selector Trigger */}
+            <button
+              onClick={() => setIsCountryModalOpen(true)}
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-semibold bg-[#F6F2EB] hover:bg-[#EDE5D8] text-[#1C1917] border border-[#E0D7C9] transition-all min-h-[38px]"
+              title="Select Delivery Country & Billing Currency"
+              aria-label="Country and currency selector"
+            >
+              <span className="text-sm leading-none">{currentCountryConfig.flag}</span>
+              <span className="text-[11px] sm:text-xs">{currentCurrencyConfig.symbol} {currency}</span>
+              <ChevronDown className="w-3 h-3 text-[#8C827A] hidden sm:inline" />
+            </button>
 
-              {isCurrencyDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-[#ECE5DA] py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <span className="px-3 py-1 text-[10px] uppercase tracking-wider text-[#8C827A] block font-semibold">
-                    Select Currency
-                  </span>
-                  {supportedCurrencies.map((c) => (
-                    <button
-                      key={c.code}
-                      onClick={() => {
-                        setCurrency(c.code);
-                        setIsCurrencyDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-[#F6F2EB] transition-colors ${
-                        currency === c.code ? 'font-bold text-[#9E7D56] bg-[#FAF8F5]' : 'text-[#1C1917]'
-                      }`}
-                    >
-                      <span>{c.name}</span>
-                      <span className="font-semibold">{c.symbol}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Search Toggle */}
+            {/* Live Search Trigger */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-[#57534E] hover:text-[#1C1917] hover:bg-[#F6F2EB] rounded-full transition-all"
+              className="p-2 text-[#57534E] hover:text-[#1C1917] hover:bg-[#F6F2EB] rounded-full transition-all min-w-[38px] min-h-[38px] flex items-center justify-center"
               title="Search collection"
               aria-label="Search"
             >
               <Search className="w-4 h-4" />
             </button>
 
-            {/* Admin Panel Quick Jump Badge */}
-            <Link
-              href="/admin"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#1C1917] hover:bg-[#322E2B] text-white transition-all shadow-xs"
-              title="Open Merchant Admin Studio"
+            {/* Supabase User Account Trigger */}
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className={`p-2 rounded-full transition-all min-w-[38px] min-h-[38px] flex items-center justify-center gap-1.5 ${
+                user
+                  ? 'bg-[#1C1917] text-white hover:bg-[#322E2B] px-2.5'
+                  : 'text-[#57534E] hover:text-[#1C1917] hover:bg-[#F6F2EB]'
+              }`}
+              title={user ? `Signed in as ${user.fullName || user.email}` : 'Sign In / Register'}
+              aria-label="User Account"
             >
-              <LayoutDashboard className="w-3.5 h-3.5 text-[#9E7D56]" />
-              <span className="hidden md:inline">Admin Studio</span>
-            </Link>
+              {user ? (
+                <>
+                  <div className="w-4 h-4 rounded-full bg-[#9E7D56] text-white text-[10px] font-serif flex items-center justify-center">
+                    {(user.fullName || user.email)[0].toUpperCase()}
+                  </div>
+                  <span className="text-xs font-medium hidden md:inline truncate max-w-[80px]">
+                    {user.fullName ? user.fullName.split(' ')[0] : 'Account'}
+                  </span>
+                </>
+              ) : (
+                <User className="w-4 h-4" />
+              )}
+            </button>
 
             {/* Cart Drawer Trigger */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2.5 bg-[#FAF8F5] hover:bg-[#F6F2EB] border border-[#ECE5DA] text-[#1C1917] rounded-full transition-all hover:scale-105 shadow-xs ml-1"
+              className="relative p-2.5 bg-[#FAF8F5] hover:bg-[#F6F2EB] border border-[#ECE5DA] text-[#1C1917] rounded-full transition-all hover:scale-105 shadow-xs min-w-[38px] min-h-[38px] flex items-center justify-center"
               aria-label="View bag"
             >
               <ShoppingBag className="w-4 h-4" />
@@ -174,16 +171,16 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
         {isSearchOpen && (
           <div className="border-t border-[#ECE5DA] bg-[#F6F2EB] px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="max-w-2xl mx-auto flex items-center gap-3">
-              <Search className="w-4 h-4 text-[#8C827A]" />
+              <Search className="w-4 h-4 text-[#8C827A] shrink-0" />
               <input
                 type="text"
-                placeholder="Search Belgian linen curtains, bouclé pillow covers, Moroccan wool rugs, bedsheet sets..."
+                placeholder="Search Belgian linen drapes, bouclé pillow covers, Berber rugs, French bedsheets..."
                 value={searchVal}
                 onChange={(e) => {
                   setSearchVal(e.target.value);
                   if (onSearchChange) onSearchChange(e.target.value);
                 }}
-                className="w-full bg-transparent text-sm text-[#1C1917] placeholder-[#8C827A] focus:outline-none"
+                className="w-full bg-transparent text-xs sm:text-sm text-[#1C1917] placeholder-[#8C827A] focus:outline-none"
                 autoFocus
               />
               {searchVal && (
@@ -199,7 +196,8 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
               )}
               <button
                 onClick={() => setIsSearchOpen(false)}
-                className="text-xs text-[#8C827A] hover:text-[#1C1917]"
+                className="text-xs text-[#8C827A] hover:text-[#1C1917] p-1"
+                aria-label="Close search"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -210,52 +208,79 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-[#1C1917]/50 backdrop-blur-sm">
-          <div className="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-[#FDFBF7] shadow-2xl p-6 flex flex-col justify-between animate-in slide-in-from-left duration-300">
+        <div className="lg:hidden fixed inset-0 z-50 bg-[#1C1917]/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-[#FDFBF7] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-300">
             <div>
-              <div className="flex items-center justify-between pb-6 border-b border-[#ECE5DA]">
+              {/* Drawer Top */}
+              <div className="flex items-center justify-between pb-5 border-b border-[#ECE5DA]">
                 <div>
                   <span className="font-serif text-xl tracking-[0.2em] text-[#1C1917]">TASMODA</span>
                   <span className="block text-[8px] uppercase tracking-widest text-[#8C827A]">
-                    Curtains, Rugs & Bedding
+                    Curtains, Rugs &amp; Bedding
                   </span>
                 </div>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1.5 text-[#57534E] hover:text-[#1C1917]"
+                  className="p-2 text-[#57534E] hover:text-[#1C1917] rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Mobile Currency Selector */}
+              {/* Mobile Account / Sign In Badge */}
               <div className="py-4 border-b border-[#ECE5DA]">
-                <label className="text-[10px] uppercase tracking-wider text-[#8C827A] block mb-1.5 font-semibold">
-                  Currency ({currency})
-                </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {supportedCurrencies.map((c) => (
-                    <button
-                      key={c.code}
-                      onClick={() => setCurrency(c.code)}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
-                        currency === c.code
-                          ? 'bg-[#1C1917] text-white border-[#1C1917]'
-                          : 'bg-white text-[#57534E] border-[#ECE5DA]'
-                      }`}
-                    >
-                      {c.symbol} {c.code}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="w-full p-3 rounded-2xl bg-[#F6F2EB] border border-[#ECE5DA] flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#1C1917] text-white flex items-center justify-center font-serif text-xs">
+                      {user ? (user.fullName || user.email)[0].toUpperCase() : <User className="w-4 h-4 text-[#D7C7B2]" />}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-xs text-[#1C1917] block">
+                        {user ? user.fullName || 'Private Client' : 'Sign In / Register'}
+                      </span>
+                      <span className="text-[10px] text-[#8C827A] block">
+                        {user ? user.email : 'Unlock custom curtain sizing'}
+                      </span>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#8C827A]" />
+                </button>
               </div>
 
-              <div className="mt-6 flex flex-col gap-3 text-sm uppercase tracking-wider font-medium text-[#1C1917]">
+              {/* Mobile Country & Currency Switcher Trigger */}
+              <div className="py-4 border-b border-[#ECE5DA]">
+                <label className="text-[10px] uppercase tracking-wider text-[#8C827A] block mb-2 font-semibold">
+                  Destination &amp; Currency
+                </label>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsCountryModalOpen(true);
+                  }}
+                  className="w-full p-3 rounded-xl bg-white border border-[#ECE5DA] flex items-center justify-between text-xs font-semibold text-[#1C1917]"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{currentCountryConfig.flag}</span>
+                    <span>{currentCountryConfig.name}</span>
+                  </div>
+                  <span className="text-[#9E7D56]">{currentCurrencyConfig.symbol} {currency}</span>
+                </button>
+              </div>
+
+              {/* Category Links */}
+              <div className="mt-4 flex flex-col gap-1 text-sm uppercase tracking-wider font-medium text-[#1C1917]">
                 {navLinks.map((link) => (
                   <button
                     key={link.name}
                     onClick={() => handleNavClick(link.category)}
-                    className="text-left py-2 border-b border-[#F6F2EB] flex items-center justify-between group"
+                    className="text-left py-2.5 px-1 border-b border-[#F6F2EB] flex items-center justify-between group min-h-[44px]"
                   >
                     <span className={selectedCategory === link.category ? 'text-[#9E7D56] font-semibold' : ''}>
                       {link.name}
@@ -266,7 +291,7 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
                 <a
                   href="#lookbook"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-left py-2 text-[#9E7D56] font-semibold flex items-center justify-between"
+                  className="text-left py-3 px-1 text-[#9E7D56] font-semibold flex items-center justify-between min-h-[44px]"
                 >
                   <span>Shop The Room (Lookbook)</span>
                   <ArrowRight className="w-4 h-4 text-[#9E7D56]" />
@@ -274,15 +299,9 @@ export function Header({ onSelectCategory, selectedCategory, onSearchChange }: H
               </div>
             </div>
 
-            <div className="pt-6 border-t border-[#ECE5DA]">
-              <Link
-                href="/admin"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-3 px-4 rounded-xl bg-[#1C1917] text-white flex items-center justify-center gap-2 text-sm font-medium tracking-wide"
-              >
-                <LayoutDashboard className="w-4 h-4 text-[#9E7D56]" />
-                <span>Enter Admin Studio</span>
-              </Link>
+            {/* Mobile Footer Note */}
+            <div className="pt-6 border-t border-[#ECE5DA] text-center text-xs text-[#8C827A]">
+              <span>Handcrafted Architectural Soft Furnishings</span>
             </div>
           </div>
         </div>
